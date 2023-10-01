@@ -1,37 +1,32 @@
+from os.path import getctime
 from datetime import datetime
-
-start_time = datetime.now()
-
-import os
-
-from os.path import join
+from time import time
 import pandas as pd
 
 
-def get_list_files():
-    list_files = list()
-    for root, dirs, files in os.walk("\\"):
-        list_files += [join(root, file) for file in files]
-    return list_files
+def upload_files_database():
+    files_database = pd.read_csv("C:\\Users\\User\\prog-tech\\data\\files.csv")
+    return files_database
 
 
-def get_files_extension(list_files):
-    files = pd.DataFrame({"file": list_files})
-    files['extension'] = files.file.str.extract(r"((?<=\.)[A-Za-z]+$)")
-    return files
-
-
-def print_top_ten_files_extensions(files_extensions):
+def get_files_extension_print_top_ten_extensions(files_database):
+    files_database['extension'] = files_database.name.str.extract(r"((?<=\.)[A-Za-z]+$)")
     print("extension", "\t", "n")
-    print(files_extensions.extension.value_counts()[:10])
+    print(files_database.extension.value_counts()[:10])
 
 
-def main():
-    list_files = get_list_files()
-    files_extensions = get_files_extension(list_files=list_files)
-    print_top_ten_files_extensions(files_extensions=files_extensions)
-    print("Execution took", datetime.now() - start_time)
+def list_top_ten_extensions_n():
+    current_time = time()
+    try:
+        time_created = getctime("C:\\Users\\User\\prog-tech\\data\\files.csv")
+        delta = datetime.fromtimestamp(current_time) - datetime.fromtimestamp(time_created)
+        if delta.days >= 2:
+            print("Database on files should be updated!")
+        files_database = upload_files_database()
+        get_files_extension_print_top_ten_extensions(files_database=files_database)
+    except:
+        print("Database on hard drive's files is not created!")
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == '__list_top_ten_extensions_n__':
+    list_top_ten_extensions_n()

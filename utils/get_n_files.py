@@ -1,27 +1,30 @@
+from os.path import getctime
 from datetime import datetime
-
-start_time = datetime.now()
-
-import os
-
-from os.path import join
+from time import time
+import pandas as pd
 
 
-def get_list_files():
-    list_files = list()
-    for root, dirs, files in os.walk("\\"):
-        list_files += [join(root, file) for file in files]
-    return list_files
+def upload_files_database():
+    files_database = pd.read_csv("C:\\Users\\User\\prog-tech\\data\\files.csv")
+    return files_database
 
 
-def print_n_files(list_files):
-    print("There are", len(list_files), "files on the hard drive")
+def print_n_files(files_database):
+    print("There are", files_database.shape[0], "files on hard drive")
 
 
-def main():
-    print_n_files(list_files=get_list_files())
-    print("Execution took", datetime.now() - start_time)
+def get_n_files():
+    current_time = time()
+    try:
+        time_created = getctime("C:\\Users\\User\\prog-tech\\data\\files.csv")
+        delta = datetime.fromtimestamp(current_time) - datetime.fromtimestamp(time_created)
+        if delta.days >= 2:
+            print("Database on files should be updated!")
+        files_database = upload_files_database()
+        print_n_files(files_database=files_database)
+    except:
+        print("Database on hard drive's files is not created!")
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == '__get_n_files__':
+    get_n_files()
