@@ -14,6 +14,9 @@ def collect_files_data():
     c.get_list_sizes()
     c.get_list_dates_created()
     c.get_list_dates_last_modified()
+    c.get_meta_data_pdf()
+    c.get_meta_data_images()
+    c.get_metadata_ms_office()
 
 
 # Initiates create_collection function
