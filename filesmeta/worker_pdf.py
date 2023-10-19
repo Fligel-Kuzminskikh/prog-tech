@@ -12,7 +12,7 @@ class WorkerPDF:
                 pdf_docinfo = pdf.docinfo
                 _dict = dict()
                 for key, value in pdf_docinfo.items():
-                    _dict[key] = value
+                    _dict[key] = str(value)
                 temp = pd.DataFrame(_dict, index=[0])
                 temp["pdf_path"] = pdf_path
                 perm = pd.concat([perm, temp])
