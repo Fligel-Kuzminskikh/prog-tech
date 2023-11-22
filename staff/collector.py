@@ -6,6 +6,7 @@ from os.path import join
 from re import findall
 from pandas import pandas as pd
 from filesmeta import dispatcher
+import sqlite3
 pd.options.display.float_format = '{:.0f}'.format
 
 
@@ -15,8 +16,8 @@ class Collector:
     meta_data_images = pd.DataFrame()
     meta_data_ms_office = pd.DataFrame()
     # Writes hard drive's path
-    #path_hard_drive = "\\"
-    path_hard_drive = "C:\\Users\\User\\Desktop\\Практика"
+    # path_hard_drive = "\\"
+    # path_hard_drive = "C:\\Users\\User\\Desktop\\Практика"
     # Initiates lists for files' names, paths, sizes, and dates when files were created and last changed
     list_names = list()
     list_paths = list()
@@ -123,12 +124,19 @@ class Collector:
                                             "date_created": self.list_dates_created,
                                             "date_last_changed": self.list_dates_changed})
         files_database["filepath"] = files_database["path"] + "\\" + files_database["name"]
+        files_database['extension'] = files_database.name.str.extract(r"((?<=\.)[A-Za-z]+$)")
         files_database = files_database.merge(right=self.meta_data_pdf, how="left", left_on="filepath",
                                               right_on="pdf_path")
         files_database = files_database.merge(right=self.meta_data_images, how="left", left_on="filepath",
                                               right_on="image_path")
         files_database = files_database.merge(right=self.meta_data_ms_office, how="left", on="filepath")
         files_database.drop(columns=["filepath", "image_path", "pdf_path"], inplace=True)
-        # Saves dataframe as .csv file
-        files_database.to_csv(path_or_buf="data/files.csv", header=True, index=False, decimal=".", sep=",",
-                              encoding="utf-8")
+        #float_columns = ["size_in_gigabytes", "date_created", "date_last_changed"]
+        #files_database[float_columns] = files_database[float_columns].applymap(float)
+        #other_columns = [column for column in files_database.columns if column not in float_columns]
+        object_columns = files_database.dtypes[files_database.dtypes == "object"].index.tolist()
+        files_database[object_columns] = files_database[object_columns].applymap(str)
+        # Saves dataframe as .db file
+        connection = sqlite3.connect("data/db.db")
+        files_database.to_sql(name="files", con=connection, if_exists="replace", index=False)
+        connection.close()

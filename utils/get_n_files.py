@@ -2,26 +2,25 @@ from os.path import getctime
 from datetime import datetime
 from time import time
 import pandas as pd
+import sqlite3
 
 
-def upload_files_database():
-    files_database = pd.read_csv("C:\\Users\\User\\prog-tech\\data\\files.csv")
-    return files_database
-
-
-def print_n_files(files_database):
-    print("There are", files_database.shape[0], "files on hard drive")
+def print_n_files():
+    connection = sqlite3.connect("data/db.db")
+    n_files = int(pd.read_sql_query("""SELECT COUNT(*)
+                                       FROM files""", connection).iloc[0, 0])
+    connection.close()
+    print("There are", n_files, "files on hard drive")
 
 
 def get_n_files():
     current_time = time()
     try:
-        time_created = getctime("C:\\Users\\User\\prog-tech\\data\\files.csv")
+        time_created = getctime("data/db.db")
         delta = datetime.fromtimestamp(current_time) - datetime.fromtimestamp(time_created)
         if delta.days >= 2:
             print("Database on files should be updated!")
-        files_database = upload_files_database()
-        print_n_files(files_database=files_database)
+        print_n_files()
     except:
         print("Database on hard drive's files is not created!")
 
