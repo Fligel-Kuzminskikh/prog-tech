@@ -16,7 +16,7 @@ class Collector:
     meta_data_images = pd.DataFrame()
     meta_data_ms_office = pd.DataFrame()
     # Writes hard drive's path
-    # path_hard_drive = "\\"
+    path_hard_drive = "\\"
     # path_hard_drive = "C:\\Users\\User\\Desktop\\Практика"
     # Initiates lists for files' names, paths, sizes, and dates when files were created and last changed
     list_names = list()
