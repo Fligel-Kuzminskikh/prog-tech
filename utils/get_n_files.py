@@ -1,4 +1,4 @@
-from os.path import getctime
+from os.path import getmtime
 from datetime import datetime
 from time import time
 import pandas as pd
@@ -16,8 +16,8 @@ def print_n_files():
 def get_n_files():
     current_time = time()
     try:
-        time_created = getctime("data/db.db")
-        delta = datetime.fromtimestamp(current_time) - datetime.fromtimestamp(time_created)
+        time_last_modified = getmtime("data/db.db")
+        delta = datetime.fromtimestamp(current_time) - datetime.fromtimestamp(time_last_modified)
         if delta.days >= 2:
             print("Database on files should be updated!")
         print_n_files()

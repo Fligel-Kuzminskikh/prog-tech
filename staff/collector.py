@@ -1,142 +1,38 @@
 import os
 
-from numpy import nan
 from tqdm import tqdm
-from os.path import join
-from re import findall
-from pandas import pandas as pd
-from filesmeta import dispatcher
+import pandas as pd
+from filesmeta.dispatcher import Dispatcher
 import sqlite3
 pd.options.display.float_format = '{:.0f}'.format
 
 
 class Collector:
-    dispatcher = dispatcher.Dispatcher()
-    meta_data_pdf = pd.DataFrame()
-    meta_data_images = pd.DataFrame()
-    meta_data_ms_office = pd.DataFrame()
-    # Writes hard drive's path
-    path_hard_drive = "\\"
-    # path_hard_drive = "C:\\Users\\User\\Desktop\\Практика"
-    # Initiates lists for files' names, paths, sizes, and dates when files were created and last changed
-    list_names = list()
-    list_paths = list()
-    list_sizes = list()
-    list_dates_created = list()
-    list_dates_changed = list()
+    dispatcher = Dispatcher()
+    # path_hard_drive = "\\"
+    data_files = list()
+    path_hard_drive = "C:\\Users\\User"
 
-    # Extracts files' names and paths
-    def get_list_files_names_paths(self):
+    def collect_data_files(self):
+        """Iterates over directories in given root (e.g. hard drive). Extracts files' names, paths, size in gigabytes,
+        date of creation, date of last modification and other metadata."""
         print("\n")
-        print("Collecting files' names and paths")
+        print("Collecting data on files...")
         print("\n")
-        # Iterates over directories in given root (hard drive)
-        for root, dirs, files in tqdm(os.walk(self.path_hard_drive)):
-            # Saves found names and paths in lists
-            self.list_names += [name for name in files]
-            self.list_paths += [root]*len(files)
+        for root, _, files in tqdm(os.walk(self.path_hard_drive)):
+            for file in files:
+                self.dispatcher.path = root
+                self.dispatcher.name = file
+                yield self.dispatcher.get_metadata_file()
 
-    # Extracts files' sizes in gigabytes
-    def get_list_sizes(self):
-        print("\n")
-        print("Collecting files' sizes")
-        print("\n")
-        # Iterates over files
-        for file in tqdm(zip(self.list_paths, self.list_names)):
-            # Tries to extract file's size and save into list in gigabytes
-            try:
-                joint_file = join(file[0], file[1])
-                self.dispatcher.worker_all.filepath = joint_file
-                self.list_sizes.append(self.dispatcher.worker_all.get_size())
-            # In case of error, it writes numpy's nan
-            except:
-                self.list_sizes.append(nan)
-
-    # Extracts files' creation date
-    def get_list_dates_created(self):
-        print("\n")
-        print("Collecting files' creation dates")
-        print("\n")
-        for file in tqdm(zip(self.list_paths, self.list_names)):
-            # Tries to extract file's creation date and save into list
-            try:
-                joint_file = join(file[0], file[1])
-                self.dispatcher.worker_all.filepath = joint_file
-                self.list_dates_created.append(self.dispatcher.worker_all.get_time_creation())
-            # In case of error, it writes numpy's nan
-            except:
-                self.list_dates_created.append(nan)
-
-    # Extracts files' modification date
-    def get_list_dates_last_modified(self):
-        print("\n")
-        print("Collecting files' last change dates")
-        print("\n")
-        for file in tqdm(zip(self.list_paths, self.list_names)):
-            # Tries to extract file's modification date and save into list
-            try:
-                joint_file = join(file[0], file[1])
-                self.dispatcher.worker_all.filepath = joint_file
-                self.list_dates_changed.append(self.dispatcher.worker_all.get_time_modification())
-            # In case of error, it writes numpy's nan
-            except:
-                self.list_dates_changed.append(nan)
-
-    def get_meta_data_pdf(self):
-        for file in tqdm(zip(self.list_paths, self.list_names)):
-            try:
-                joint_file = join(file[0], file[1])
-                if findall(pattern=r"\.pdf$", string=joint_file):
-                    self.dispatcher.worker_pdf.pdf_paths.append(joint_file)
-            except:
-                pass
-        self.meta_data_pdf = self.dispatcher.worker_pdf.get_pdf_meta_data()
-
-    def get_meta_data_images(self):
-        for file in tqdm(zip(self.list_paths, self.list_names)):
-            try:
-                joint_file = join(file[0], file[1])
-                if findall(pattern=r"\.[Jj][Pp][Gg]$|\.[Pp][Nn][Gg]$", string=joint_file):
-                    self.dispatcher.worker_images.image_paths.append(joint_file)
-            except:
-                pass
-        self.meta_data_images = self.dispatcher.worker_images.get_exif_data()
-
-    def get_metadata_ms_office(self):
-        for file in tqdm(zip(self.list_paths, self.list_names)):
-            try:
-                joint_file = join(file[0], file[1])
-                if findall(pattern=r"\.docx$", string=joint_file):
-                    self.dispatcher.worker_ms_office.docx_paths.append(joint_file)
-                elif findall(pattern=r"\.pptx$", string=joint_file):
-                    self.dispatcher.worker_ms_office.docx_paths.append(joint_file)
-                elif findall(pattern=r"\.xl[st][xm]$", string=joint_file):
-                    self.dispatcher.worker_ms_office.xl_paths.append(joint_file)
-            except:
-                pass
-        self.meta_data_ms_office = self.dispatcher.worker_ms_office.get_metadata_ms_office()
-
-    # Creates data-set and saves it as .csv file
-    def create_files_database(self):
-        # Create pandas dataframe that stores lists with necessary data on files
-        files_database = pd.DataFrame(data={"name": self.list_names, "path": self.list_paths,
-                                            "size_in_gigabytes": self.list_sizes,
-                                            "date_created": self.list_dates_created,
-                                            "date_last_changed": self.list_dates_changed})
-        files_database["filepath"] = files_database["path"] + "\\" + files_database["name"]
-        files_database['extension'] = files_database.name.str.extract(r"((?<=\.)[A-Za-z]+$)")
-        files_database = files_database.merge(right=self.meta_data_pdf, how="left", left_on="filepath",
-                                              right_on="pdf_path")
-        files_database = files_database.merge(right=self.meta_data_images, how="left", left_on="filepath",
-                                              right_on="image_path")
-        files_database = files_database.merge(right=self.meta_data_ms_office, how="left", on="filepath")
-        files_database.drop(columns=["filepath", "image_path", "pdf_path"], inplace=True)
-        #float_columns = ["size_in_gigabytes", "date_created", "date_last_changed"]
-        #files_database[float_columns] = files_database[float_columns].applymap(float)
-        #other_columns = [column for column in files_database.columns if column not in float_columns]
-        object_columns = files_database.dtypes[files_database.dtypes == "object"].index.tolist()
-        files_database[object_columns] = files_database[object_columns].applymap(str)
-        # Saves dataframe as .db file
+    def create_collected_files_database(self):
+        """Creates pandas dataframe that stores dictionaries with necessary data on files. Saves dataframe as .db
+        file."""
+        files_database = pd.DataFrame(list(self.collect_data_files()))
+        query = files_database.dtypes == "object"
+        columns = files_database.dtypes[query].index
+        for column in columns:
+            files_database[column] = files_database[column].astype("str")
         connection = sqlite3.connect("data/db.db")
         files_database.to_sql(name="files", con=connection, if_exists="replace", index=False)
         connection.close()
