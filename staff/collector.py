@@ -11,7 +11,7 @@ class Collector:
     dispatcher = Dispatcher()
     # path_hard_drive = "\\"
     data_files = list()
-    path_hard_drive = "C:\\Users\\User"
+    path_hard_drive = "C:\\Users\\User\\Desktop"
 
     def collect_data_files(self):
         """Iterates over directories in given root (e.g. hard drive). Extracts files' names, paths, size in gigabytes,
