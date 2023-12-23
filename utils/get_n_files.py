@@ -10,7 +10,8 @@ def print_n_files():
     n_files = int(pd.read_sql_query("""SELECT COUNT(*)
                                        FROM files""", connection).iloc[0, 0])
     connection.close()
-    print("There are", n_files, "files on hard drive")
+    # print("There are", n_files, "files on hard drive")
+    return n_files
 
 
 def get_n_files():
@@ -20,7 +21,8 @@ def get_n_files():
         delta = datetime.fromtimestamp(current_time) - datetime.fromtimestamp(time_last_modified)
         if delta.days >= 2:
             print("Database on files should be updated!")
-        print_n_files()
+        n_files = print_n_files()
+        return n_files, datetime.fromtimestamp(time_last_modified)
     except:
         print("Database on hard drive's files is not created!")
 
