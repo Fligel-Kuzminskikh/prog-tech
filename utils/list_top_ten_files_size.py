@@ -14,7 +14,8 @@ def print_top_files_size():
                                               ORDER BY size_in_bytes DESC
                                               LIMIT 10""", connection)
     connection.close()
-    print(top_ten_files_size)
+    # print(top_ten_files_size)
+    return top_ten_files_size
 
 
 def list_top_ten_files_size():
@@ -24,7 +25,7 @@ def list_top_ten_files_size():
         delta = datetime.fromtimestamp(current_time) - datetime.fromtimestamp(time_last_modified)
         if delta.days >= 2:
             print("Database on files should be updated!")
-        print_top_files_size()
+        return print_top_files_size()
     except:
         print("Database on hard drive's files is not created!")
 

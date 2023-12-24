@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 
 @app.route("/")
-def main():
+def create_main():
     # current_date_time = datetime.now()
     # filenames = get_filenames()
     n_files, time_last_modified = get_n_files()
@@ -22,17 +22,17 @@ def main():
 
 
 @app.route("/extensions")
-def extensions():
+def create_extensions():
     top_ten_extensions_n = list_top_ten_extensions_n().values.tolist()
     # return "<h1>О проекте</h1><p>Нашему сайту около 15 минут</p>"
     return render_template("extensions.html", top_ten_extensions_n=top_ten_extensions_n)
 
 
 @app.route("/sizes")
-def extensions():
-    top_ten_extensions_n = list_top_ten_extensions_n().values.tolist()
+def create_sizes():
+    top_ten_files_size = list_top_ten_files_size().values.tolist()
     # return "<h1>О проекте</h1><p>Нашему сайту около 15 минут</p>"
-    return render_template("sizes.html", top_ten_extensions_n=top_ten_extensions_n)
+    return render_template("sizes.html", top_ten_files_size=top_ten_files_size)
 
 
 app.run(port=1488)
