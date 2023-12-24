@@ -13,7 +13,8 @@ def get_files_extension_print_top_ten_extensions():
                                                 ORDER BY n DESC
                                                 LIMIT 10""", connection)
     connection.close()
-    print(top_ten_extensions_n)
+    # print(top_ten_extensions_n)
+    return top_ten_extensions_n
 
 
 def list_top_ten_extensions_n():
@@ -23,7 +24,7 @@ def list_top_ten_extensions_n():
         delta = datetime.fromtimestamp(current_time) - datetime.fromtimestamp(time_last_modified)
         if delta.days >= 2:
             print("Database on files should be updated!")
-        get_files_extension_print_top_ten_extensions()
+        return get_files_extension_print_top_ten_extensions()
     except:
         print("Database on hard drive's files is not created!")
 
