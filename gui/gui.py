@@ -1,3 +1,7 @@
+import sys
+
+sys.path = ["C:\\Users\\User\\prog-tech"] + sys.path
+
 from tkinter import *
 from tkinter import ttk
 from utils.get_n_files import get_n_files
